@@ -5,8 +5,8 @@ const sendToken = (token, statusCode, res, message) => {
         expires: new Date(
             Date.now() + config.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
         ),
-        httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production' // Ensure the cookie is only sent over HTTPS in production
+        httpOnly: true,
+        secure: true
     };
   
     res.status(statusCode).cookie("token", token, cookieOptions).json({
