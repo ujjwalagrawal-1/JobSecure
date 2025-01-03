@@ -39,6 +39,9 @@ async function Signup(req, res) {
             httpOnly: true,
             secure: true, // Only secure in production
             sameSite: "None", // Required for cross-origin cookies
+            expires: new Date(
+                Date.now() + config.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+            )
         };
         body.Password = "";
         res.header("token", token)
@@ -93,6 +96,9 @@ async function Signin(req, res,next) {
             httpOnly: true,
             secure: true,
             sameSite: "None",
+            expires: new Date(
+                Date.now() + config.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+            )
         };
         const token = dbUser.generateAuthToken();
         dbUser.Password = "";
