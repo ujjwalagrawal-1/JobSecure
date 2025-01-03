@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Context } from "../../main";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 function JobFiles() {
   const [jobs, setJobs] = useState([]);
-  const { isAuthorized } = useContext(Context);
+  const { isLoggedIn } = useAuth();
   const navigateTo = useNavigate();
 
   useEffect(() => {
@@ -22,7 +22,7 @@ function JobFiles() {
       toast.error(error.message);
     }
   }, [jobs]);
-  if (!isAuthorized) {
+  if (!isLoggedIn) {
     navigateTo("/");
   }
 

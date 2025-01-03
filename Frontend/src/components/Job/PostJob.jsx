@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { Context } from "../../main";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 const PostJob = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -16,7 +16,7 @@ const PostJob = () => {
   const [fixedSalary, setFixedSalary] = useState("");
   const [salaryType, setSalaryType] = useState("default");
 
-  const { isAuthorized, user } = useContext(Context);
+  const { isLoggedIn , user } = useAuth();
 
   const handleJobPost = async (e) => {
     e.preventDefault();
@@ -69,10 +69,10 @@ const PostJob = () => {
 
   const navigateTo = useNavigate();
   useEffect(() => {
-    if (!isAuthorized || (user && user.role !== "Employer")) {
+    if (!isLoggedIn || (user && user.Role !== "Employer")) {
       navigateTo("/");
     }
-  }, [isAuthorized, navigateTo, user]);
+  }, [isLoggedIn, navigateTo, user]);
 
   return (
     <div className="min-h-screen bg-[#fbe9d1] dark:bg-[#374151] text-[#e74833] dark:text-[#66fcf1] p-4">

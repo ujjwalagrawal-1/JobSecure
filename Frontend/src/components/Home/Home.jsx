@@ -1,14 +1,14 @@
-import React, { useContext } from 'react'
-import { Context } from '../../main'
+import React from 'react'
 import { Navigate } from 'react-router-dom';
 import Herosection from './Herosection';
 import Howitworks from './Howitworks';
 import Popularcategory from './Popularcategory';
 import PopularCompanies from './PopularCompanies';
+import { useAuth } from '../../Authcontext';
 
 function Home() {
-  const {isAuthorized} = useContext(Context);
-  if(!isAuthorized){
+  const {isLoggedIn} = useAuth();
+  if(!isLoggedIn){
     return <Navigate to={"/login"} />
   }
   return (

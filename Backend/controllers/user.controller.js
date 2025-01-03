@@ -3,16 +3,15 @@ const { User } = require("../module/user.model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 const bcrypt = require("bcrypt");
-const { sendToken } = require("../utils/jwttokens");
 async function Signup(req, res) {
     const body = req.body;
     if (!body) {
-        res.status(400).json(errorhandler(400, "Request body is missing"));
+        res.status(400).json({message : "Request body is missing"});
         return;
     }
     if(body.Password !== body.ConfirmPassword){
         res.status(403).json({
-            msg : "Confirm Password and Password do not matched"
+            message : "Confirm Password and Password do not matched"
         })
         return;
     }
@@ -26,19 +25,34 @@ async function Signup(req, res) {
         });
 
         if (existingUser) {
-            res.status(401).json(errorhandler(401, "User is already registered"));
+            res.status(401).json({message : "User is already registered"});
             return;
         }
 
         // Create new user
         const dbUser = new User(body);
         await dbUser.save();
-        // Generate auth token and user response
         const token = dbUser.generateAuthToken();
-        sendToken(token, 201, res, "User registered successfully", dbUser.getUserData());
+
+        // sendToken(token, 201, res, "User registered successfully", dbUser.getUserData());
+        const options = {
+            httpOnly: true,
+            secure: true, // Only secure in production
+            sameSite: "None", // Required for cross-origin cookies
+        };
+        body.Password = "";
+        res.header("token", token)
+      .status(200)
+      .cookie("token", token, options)
+      .json({
+        message: "SignUp successful",
+        token,
+        body,
+      });
+        
     } catch (error) {
         console.error(error);
-        res.status(500).json(errorhandler(500, "Internal Server Error during registering the User "));
+        res.status(500).json({message : "Internal Server Error during registering the User "});
     }
 }
 
@@ -47,7 +61,7 @@ async function Signin(req, res,next) {
     const body = req.body;
     console.log(body);
     if (!body) {
-        res.status(400).json(errorhandler(400, "Request body is missing"));
+        res.status(400).json( { message  : "Request body is missing"});
         return;
     }
 
@@ -60,14 +74,14 @@ async function Signin(req, res,next) {
         });
 
         if (!dbUser) {
-            res.status(401).json(errorhandler(401, "User not registered"));
+            res.status(401).json({ message  : "User not registered"});
             return;
         }
 
         // Check if password matches
         const isMatch = await dbUser.isPasswordCorrect(body.Password);
         if (!isMatch) {
-            res.status(401).json(errorhandler(401, "Password is incorrect, please relogin"));
+            res.status(401).json({message  : "Password is incorrect, please relogin" });
             return;
         }
         if(body.Role !== dbUser.Role){
@@ -75,30 +89,43 @@ async function Signin(req, res,next) {
                 message : "Please Provide the  Coorect Role"
             });
         }
+        const options = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+        };
         const token = dbUser.generateAuthToken();
-        sendToken(token, 201, res, "User Signedin successfully", dbUser.getUserData());
+        dbUser.Password = "";
+        res.header("token", token)
+      .status(200)
+      .cookie("token", token, options)
+      .json({
+        message: "Login successful",
+        token,
+        dbUser,
+      });
     } catch (error) {
         console.error(error);
-        res.status(500).json(errorhandler(500, "Internal Server Error While Signin"));
+        res.status(500).json({message : "Internal Server Error While Signin"});
     }
 }
 async function Logout(req, res, next) {
+    const options = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+    };
     try{
-        res
-    .status(200)  // Changed status code to 200 OK
-    .cookie("token", "", {
-      httpOnly: true,
-      expires: new Date(0),  // Set expiration date to a time in the past
-    })
+        res.status(200)
+    .cookie("token","",options)
     .json({
       success: true,
       message: "Logged Out Successfully.",
     });
     }
     catch(error){
-        res.status(420,"User Not logout")
+        res.status(402).json({message : "User Not Logged Out"})
     }
-    
 }
 
 async function Forgotpassword(req,res){
@@ -108,7 +135,7 @@ async function Forgotpassword(req,res){
     const olduser = await User.findOne({Email : em});
     if(!olduser){
         res.status(403).json({
-            msg : "This  Email is Not registerd to the Database"
+            message : "This  Email is Not registerd to the Database"
         });
         return;
     }
@@ -129,7 +156,7 @@ async function Resetpassword(req,res){
         const olduser = await User.findById(_id);
         if (!olduser) {
             return res.status(403).json({
-                msg: "You are not the right user"
+                message: "You are not the right user"
             });
         }
         
@@ -137,20 +164,19 @@ async function Resetpassword(req,res){
         try {
             const verify = jwt.verify(token, secret);
             if(!verify){
-                res.status(403).json({msg : "Noefewfewfds"});
+                res.status(403).json({message : "Noefewfewfds"});
             }
-            // You can render a page here or return a success message
             res.render("index",{Email : verify.Email})
         } catch (error) {
             console.log(error);
             return res.status(401).json({
-                msg: "Not verified!"
+                message : "Not verified!"
             });
         }
     } catch (error) {
         console.error(error);
         return res.status(500).json({
-            msg: "Internal server error"
+            message : "Internal server error"
         });
     }
 
@@ -163,14 +189,14 @@ async function Resetedpassword(req, res) {
         // Validate password (basic example)
         if (!password || password.length < 6) {
             return res.status(400).json({
-                msg: "Password must be at least 6 characters long"
+                message: "Password must be at least 6 characters long"
             });
         }
 
         const olduser = await User.findById(_id);
         if (!olduser) {
             return res.status(403).json({
-                msg: "You are not the right user"
+                message : "You are not the right user"
             });
         }
 
@@ -181,7 +207,7 @@ async function Resetedpassword(req, res) {
             jwt.verify(token, secret);
         } catch (error) {
             return res.status(401).json({
-                msg: "Not verified!"
+                message: "Not verified!"
             });
         }
 
@@ -190,23 +216,24 @@ async function Resetedpassword(req, res) {
         await User.updateOne({ _id }, { $set: { Password: hasedpassword } });
 
         return res.status(200).json({
-            msg: "Password has been successfully reset"
+            message: "Password has been successfully reset"
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({
-            msg: "Internal server error"
+            message: "Internal server error"
         });
     }
 }
 async function getUser(req,res,next){
     try {
-        const User = req.User;
-
+        const user = req.User;
+        console.log("rto" ,user);
         res.status(200).json({
+            message : "Welcome!!",
             Success : true,
-            User
-        })
+            user
+        })  
     } catch (error) {
         return errorhandler(402,"Can't fetch the data")
     }

@@ -2,22 +2,22 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { Context } from "../../main";
 import ResumeModal from "./ResumeModal";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 const MyApplications = () => {
-  const { User, isAuthorized } = useContext(Context);
+  const { user, isLoggedIn } = useAuth();
   const [applications, setApplications] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [resumeImageUrl, setResumeImageUrl] = useState("");
 
   const navigateTo = useNavigate();
-
+  
   useEffect(() => {
     const fetchApplications = async () => {
       try {
         const endpoint =
-          User && User.role === "Employer"
+          user && user.Role === "Employer"
             ? `${BACKEND_URL}/api/v1/application/employer/getall`
             : `${BACKEND_URL}/api/v1/application/jobseeker/getall`;
         const res = await axios.get(endpoint, {
@@ -29,12 +29,12 @@ const MyApplications = () => {
       }
     };
 
-    if (isAuthorized) {
+    if (isLoggedIn) {
       fetchApplications();
     } else {
       navigateTo("/");
     }
-  }, [isAuthorized, navigateTo, User]);
+  }, [isLoggedIn, navigateTo, user]);
 
   const deleteApplication = async (id) => {
     try {
@@ -65,7 +65,7 @@ const MyApplications = () => {
   return (
     <section className="my_applications page bg-[#374151] text-[#66fcf1] min-h-screen p-8">
       <div className="container max-w-5xl mx-auto">
-        {User && User.Role === "Job Seeker" ? (
+        {user && user.Role === "Job Seeker" ? (
           <>
             <h1 className="text-3xl mb-6 text-center">My Applications</h1>
             {applications.length === 0 ? (

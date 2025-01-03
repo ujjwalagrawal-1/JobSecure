@@ -2,14 +2,14 @@ import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Context } from "../../main";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 function JobDetails() {
   const { id } = useParams();
   const [job, setJob] = useState({});
   const navigateTo = useNavigate();
 
-  const { isAuthorized, User } = useContext(Context);
+  const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
     axios
@@ -26,10 +26,10 @@ function JobDetails() {
   }, [id, navigateTo]);
 
   useEffect(() => {
-    if (!isAuthorized) {
+    if (!isLoggedIn) {
       navigateTo("/login");
     }
-  }, [isAuthorized, navigateTo]);
+  }, [isLoggedIn, navigateTo]);
 
   return (
     <div className="min-h-screen bg-[#fbe9d1] dark:bg-[#374151] text-[#e74833] dark:text-[#66fcf1] p-4">

@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
-import { Context } from "../../main";
 import toast from "react-hot-toast";
 import { Link, Navigate } from "react-router-dom";
 import Input from "../comp/Input";
 import axios from "axios"; // Import axios
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 function Register() {
-  const { User, isAuthorized, setAuthorized, setUser } = useContext(Context);
+  const {storeTokenInLS , isLoggedIn} = useAuth();
   const [Username, setUsername] = useState("");
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
@@ -18,9 +18,11 @@ function Register() {
     );
   const [Phone, setPhone] = useState("");
   const [Role, setRole] = useState("");
-
+  if (isLoggedIn) {
+    return <Navigate to={"/"} />;
+  }
   const handleRegister = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     try {
       const response = await axios.post(
         `${BACKEND_URL}/api/v1/user/signup`,
@@ -44,25 +46,12 @@ function Register() {
       );
       toast.success(response.data.message);
       console.log(response.data);
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setFirstname("");
-      setLastname("");
-      setPhone("");
-      setRole("");
-      setAvator("")
-      setAuthorized(true);
+      storeTokenInLS(response.data.token);
     } catch (error) {
-      toast.error(error.message);
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Some thing Went wrong");
     }
   };
-
-  if (isAuthorized) {
-    return <Navigate to={"/"} />;
-  }
-
   return (
     <div className="w-full h-auto flex justify-evenly items-center bg-[#1A2130]">
       <div className="my-10 w-full max-w-md p-8 border border-red-500 rounded-lg bg-[#83B4FF]">

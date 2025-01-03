@@ -1,17 +1,17 @@
-import React, { useContext, useState } from "react";
-import { Context } from "../../main";
+import React, {useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Input from "../comp/Input";
 import axios from "axios"; // Import axios
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 function Login() {
-  const { User, isAuthorized, setAuthorized, setUser } = useContext(Context);
+  const { storeTokenInLS , isLoggedIn , user } = useAuth();
   const [Username, setUsername] = useState("");
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
   const [Role, setRole] = useState("");
-
+  const navigateTo = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -30,17 +30,20 @@ function Login() {
           },
         }
       );
-      toast.success(response.data.message);
-      console.log(response.data);
-      setAuthorized(true);
+      storeTokenInLS(response.data.token);
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response.data.message || "Some thing Went Wrong Please Re-Enter details")
+      console.log(error.response.data.message);
     }
   };
 
-  if (isAuthorized) {
-    return <Navigate to={"/"} />;
-  }
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      toast.success("Login Success")
+      navigateTo('/');
+    }
+  }, [isLoggedIn, user]);
+  
 
   return (
     <div className="w-full h-auto flex justify-evenly items-center bg-[#1A2130]">

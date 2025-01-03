@@ -1,16 +1,15 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Context } from "../../main";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { LuLogOut } from "react-icons/lu";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 function Navbar() {
-  const [searchValue, setSearchValue] = useState("");
-  const { isAuthorized, setAuthorized, User } = useContext(Context);
+  const { isLoggedIn , logout, user } = useAuth();
   const navigate = useNavigate();
-
   const logouthandler = async () => {
+    console.log("Handle Logout");
     try {
       const response = await axios.get(
         `${BACKEND_URL}/api/v1/user/logout`,
@@ -18,9 +17,8 @@ function Navbar() {
           withCredentials: true,
         }
       );
-
       toast.success(response.data.message);
-      setAuthorized(false);
+      logout();
       navigate("/login");
     } catch (error) {
       const errorMessage =
@@ -37,16 +35,16 @@ function Navbar() {
             <img src="./images/full_logo.png" className="h-8" alt="JobSecure Logo" />
           </Link>
           <div className="flex items-center space-x-6 rtl:space-x-reverse">
-            {isAuthorized ? (
+            {isLoggedIn ? (
               <Link
                 className="text-sm text-gray-500 dark:text-white hover:underline"
               >
-                {User?.firstname}   {User?.lastname}
+                {user.firstname}  {user.lastname}
               </Link>
             ) : (
-              <div></div>
+              <div> HI there</div>
             )}
-            {!isAuthorized ? (
+            {!isLoggedIn ? (
               <Link to={"/login"}>
                 <button className="text-blue-800 hover:underline">Login / Register</button>
               </Link>
@@ -54,8 +52,8 @@ function Navbar() {
               <div className="flex space-x-4 justify-evenly">
                 <button className="">
                   <img
-                    src={User?.Avatar || "https://avatar.iran.liara.run/public/18"}
-                    alt="User Avatar"
+                    src={user.Avator}
+                    alt="user Avatar"
                     className="w-10 hover:scale-110 border-4 border-x-black rounded-full dark:border-slate-200 items-center"
                   />
                 </button>
@@ -72,7 +70,7 @@ function Navbar() {
           </div>
         </div>
       </nav>
-      {isAuthorized && (
+      {isLoggedIn && (
         <div>
           <nav className="bg-gray-50 dark:bg-gray-700">
             <div className="max-w-screen-xl px-4 py-3 mx-auto">
@@ -90,10 +88,10 @@ function Navbar() {
                   </li>
                   <li>
                     <Link to={"application/me"} className="text-gray-900 dark:text-white hover:underline">
-                      {User.Role === "Employer" ? "Applicants' Applications" : "My Applications"}
+                      {user.Role === "Employer" ? "Applicants' Applications" : "My Applications"}
                     </Link>
                   </li>
-                  {User.Role === "Employer" ? (
+                  {user.Role === "Employer" ? (
                     <>
                     <li>
                       <Link to={"/job/post"} className="text-gray-900 dark:text-white hover:underline">

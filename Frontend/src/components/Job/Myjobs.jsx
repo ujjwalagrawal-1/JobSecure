@@ -3,13 +3,13 @@ import React, { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
-import { Context } from "../../main";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 const Myjobs = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [editingMode, setEditingMode] = useState(null);
-  const { isAuthorized, user } = useContext(Context);
+  const { isLoggedIn, user } = useAuth();
 
   const navigateTo = useNavigate();
 
@@ -30,7 +30,7 @@ const Myjobs = () => {
     fetchJobs();
   }, []);
 
-  if (!isAuthorized || (user && user.role !== "Employer")) {
+  if (!isLoggedIn || (user && user.Role !== "Employer")) {
     navigateTo("/");
   }
 

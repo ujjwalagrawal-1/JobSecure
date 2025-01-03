@@ -1,5 +1,4 @@
 import React, { useContext, useEffect } from 'react';
-import { Context } from './main';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Home from './components/Home/Home';
@@ -15,34 +14,13 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { BACKEND_URL } from '../services/service';
-
+import { AuthProvider } from './Authcontext';
 function App() {
-  const { isAuthorized, setAuthorized, setUser } = useContext(Context);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/api/v1/user/getuser`,
-          {
-            withCredentials: true,
-          }
-        );
-        // console.log(response.data.User);
-        setUser(response.data.User);
-        setAuthorized(true);
-      } catch (error) {
-        
-        setAuthorized(false);
-      }
-    };
-    fetchUser();
-  }, [isAuthorized]);
-
   return (
+    <>
+    <Toaster />
+    <AuthProvider>
     <BrowserRouter>
-      <Toaster />
       <Navbar/>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -58,6 +36,9 @@ function App() {
       </Routes>
       <Footer/>
     </BrowserRouter>
+    </AuthProvider>
+    </>
+    
   );
 }
 

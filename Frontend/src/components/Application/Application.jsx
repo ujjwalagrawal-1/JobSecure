@@ -2,25 +2,24 @@ import axios from "axios";
 import React, { useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import { Context } from "../../main";
 import { BACKEND_URL } from "../../../services/service";
+import { useAuth } from "../../Authcontext";
 const Application = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const {isLoggedIn , user } = useAuth();
+  const [name, setName] = useState(user.firstname + " " + user.lastname);
+  const [email, setEmail] = useState(user.Email);
   const [coverLetter, setCoverLetter] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(user.Phone);
   const [address, setAddress] = useState("");
   const [resume, setResume] = useState(null);
-
-  const { isAuthorized, User } = useContext(Context);
   const navigateTo = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
-    if (!isAuthorized || (User && User.role === "Employer")) {
+    if (!isLoggedIn || (user && user.Role === "Employer")) {
       navigateTo("/");
     }
-  }, [isAuthorized, User]);
+  }, [isLoggedIn, user]);
 
   const handleFileChange = (event) => {
     const resume = event.target.files[0];
